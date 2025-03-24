@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# Data files (uncomment if you want to exclude data files from git)
+# data/*
+# !data/.gitkeep
+
+# Output files (uncomment if you want to exclude output from git)
+# output/*
+# !output/.gitkeep
+
+# macOS
+.DS_Store 
