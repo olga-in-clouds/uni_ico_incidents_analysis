@@ -1,6 +1,5 @@
 """
 Security Incidents Data Preparation Script
-Version: 1.0
 
 Purpose: Enhance security incident data with calculated metrics including:
 - Reporting time in hours

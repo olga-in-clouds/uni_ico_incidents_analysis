@@ -1,28 +1,21 @@
-# Analysis and Reporting Project
+## This project analyses the Data Breach Incidents reported to the ICO
 
-This repository contains data analysis work for the Analysis and Reporting university module.
+## Key Features
+- Descriptive analysis of the data
+- Interactive visualization of the relationship with Plotly
+- Prediction capabilities for new severity scores
+- Statistical assessment including R-squared value
 
-## Project Structure
+## Data
+The analysis uses the ICO dataset: https://ico.org.uk/action-weve-taken/complaints-and-concerns-data-sets/data-security-incident-trends/
 
-- `data/`: Directory for storing data files
-- `notebooks/`: Jupyter notebooks for analysis and visualization
-- `src/`: Source code for reusable functions and utilities
-- `output/`: Directory for storing analysis results and generated figures
-- `requirements.txt`: Python dependencies
-
-## Setup
-
-1. Create a virtual environment (recommended):
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows use: venv\Scripts\activate
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Requirements
+- Python 3.x
+- pandas==1.5.3
+- numpy==1.24.3
+- plotly==5.15.0
+- scikit-learn==1.2.2
 
 ## Usage
-
-Place your data files in the `data/` directory and use either Python scripts in `src/` or Jupyter notebooks in `notebooks/` for analysis. 
+1. Open the Jupyter notebooks
+2. Run all cells

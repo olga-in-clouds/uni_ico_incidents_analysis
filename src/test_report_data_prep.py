@@ -1,3 +1,8 @@
+"""
+Unit Tests for Report Data Preparation 
+Purpose: Verify the functionality of the report_data_preperation.py 
+"""
+
 import unittest
 import pandas as pd
 import numpy as np
@@ -11,14 +16,14 @@ sys.path.append(str(Path(__file__).parent.parent))
 from report_data_preperation import (
     validate_input_data,
     get_range_midpoint,
-    normalize_column,
+    normalise_column,
     calculate_severity_score,
     process_data,
     TIME_MAP,
     RANGE_MAP
 )
 
-class TestReportDataPrep2(unittest.TestCase):
+class TestReportDataPrep(unittest.TestCase):
     def setUp(self):
         """Set up test data"""
         self.sample_data = pd.DataFrame({
@@ -29,6 +34,16 @@ class TestReportDataPrep2(unittest.TestCase):
             'Data Type': ['Personal', 'Financial', 'Personal', 'Personal'],
             'No. Data Subjects Affected': ['1 to 9', '1 to 9', '10 to 99', 'Unknown']
         })
+        
+        # Create temporary files for testing
+        self.input_file = "test_input.csv"
+        self.output_file = "test_output.csv"
+
+    def tearDown(self):
+        """Clean up after tests"""
+        # Remove temporary files
+        Path(self.input_file).unlink(missing_ok=True)
+        Path(self.output_file).unlink(missing_ok=True)
 
     def test_validate_input_data_valid(self):
         """Test validation with valid data"""
@@ -73,23 +88,23 @@ class TestReportDataPrep2(unittest.TestCase):
             else:
                 self.assertEqual(result, expected_output)
 
-    def test_normalize_column(self):
-        """Test column normalization"""
+    def test_normalise_column(self):
+        """Test column normalisation"""
         test_series = pd.Series([1, 2, 3, 4, 5])
-        normalized = normalize_column(test_series, 'test')
+        normalised = normalise_column(test_series, 'test')
         
-        # Check normalization bounds
-        self.assertAlmostEqual(normalized.min(), 0)
-        self.assertAlmostEqual(normalized.max(), 1)
+        # Check normalisation bounds
+        self.assertAlmostEqual(normalised.min(), 0)
+        self.assertAlmostEqual(normalised.max(), 1)
         
         # Check specific values
-        self.assertAlmostEqual(normalized.iloc[0], 0.0)  # First value (1) should be 0
-        self.assertAlmostEqual(normalized.iloc[-1], 1.0)  # Last value (5) should be 1
+        self.assertAlmostEqual(normalised.iloc[0], 0.0)  # First value (1) should be 0
+        self.assertAlmostEqual(normalised.iloc[-1], 1.0)  # Last value (5) should be 1
 
-    def test_normalize_column_single_value(self):
+    def test_normalise_column_single_value(self):
         """Test normalization with single value series"""
         test_series = pd.Series([1, 1, 1])
-        result = normalize_column(test_series, 'test')
+        result = normalise_column(test_series, 'test')
         
         # When all values are the same, normalization should return all NaN
         # because (x - min) / (max - min) = 0/0
@@ -116,47 +131,38 @@ class TestReportDataPrep2(unittest.TestCase):
 
     def test_process_data_integration(self):
         """Test the entire data processing pipeline"""
-        # Create temporary input and output files
-        input_file = "test_input.csv"
-        output_file = "test_output.csv"
+        # Save test data to CSV
+        self.sample_data.to_csv(self.input_file, index=False)
         
-        try:
-            # Save test data to CSV
-            self.sample_data.to_csv(input_file, index=False)
-            
-            # Process the data
-            process_data(input_file, output_file)
-            
-            # Read and verify the output
-            result_df = pd.read_csv(output_file)
-            
-            # Check that all expected columns exist
-            expected_columns = [
-                'BI Reference', 'Year', 'Quarter', 'Time Taken to Report',
-                'Data Type', 'No. Data Subjects Affected', 'reporting_time_hrs',
-                'Incident_ID', 'subjects_num', 'data_types_per_incident',
-                'subjects_norm', 'reporting_time_norm', 'data_types_norm',
-                'severity_score'
-            ]
-            for col in expected_columns:
-                self.assertIn(col, result_df.columns)
-            
-            # Verify data consistency
-            self.assertEqual(
-                len(result_df['Incident_ID'].unique()),
-                len(self.sample_data['BI Reference'].unique())
-            )
-            
-            # Check that BI001 has two data types
-            bi001_data_types = result_df[
-                result_df['BI Reference'] == 'BI001'
-            ]['data_types_per_incident'].iloc[0]
-            self.assertEqual(bi001_data_types, 2)
-            
-        finally:
-            # Cleanup
-            Path(input_file).unlink(missing_ok=True)
-            Path(output_file).unlink(missing_ok=True)
+        # Process the data
+        process_data(self.input_file, self.output_file)
+        
+        # Read and verify the output
+        self.assertTrue(Path(self.output_file).exists())
+        result_df = pd.read_csv(self.output_file)
+        
+        # Check that all expected columns exist
+        expected_columns = [
+            'BI Reference', 'Year', 'Quarter', 'Time Taken to Report',
+            'Data Type', 'No. Data Subjects Affected', 'reporting_time_hrs',
+            'Incident_ID', 'subjects_num', 'data_types_per_incident',
+            'subjects_norm', 'reporting_time_norm', 'data_types_norm',
+            'severity_score'
+        ]
+        for col in expected_columns:
+            self.assertIn(col, result_df.columns)
+        
+        # Verify data consistency
+        self.assertEqual(
+            len(result_df['Incident_ID'].unique()),
+            len(self.sample_data['BI Reference'].unique())
+        )
+        
+        # Check that BI001 has two data types
+        bi001_data_types = result_df[
+            result_df['BI Reference'] == 'BI001'
+        ]['data_types_per_incident'].iloc[0]
+        self.assertEqual(bi001_data_types, 2)
 
     def test_time_mapping(self):
         """Test time mapping values"""
@@ -186,10 +192,29 @@ class TestReportDataPrep2(unittest.TestCase):
         # BI002 should have 1 unique data type (Personal)
         self.assertEqual(data_type_counts['BI002'], 1)
 
+    def test_integration_cleanup(self):
+        """Integration test with explicit cleanup"""
+        # Save test data to CSV for the test
+        self.sample_data.to_csv(self.input_file, index=False)
+        
+        # Process the data
+        process_data(self.input_file, self.output_file)
+        
+        # Read and verify the output
+        self.assertTrue(Path(self.output_file).exists())
+        result_df = pd.read_csv(self.output_file)
+        
+        # Verify data consistency
+        self.assertEqual(
+            len(result_df['Incident_ID'].unique()),
+            len(self.sample_data['BI Reference'].unique())
+        )
+
 def main():
+    """Run the test suite"""
     # Configure logging to suppress log messages during tests
     logging.getLogger().setLevel(logging.ERROR)
-    unittest.main()
+    unittest.main(verbosity=2)
 
 if __name__ == '__main__':
     main()
